@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Người Anh Thương 💙</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts hỗ trợ tiếng Việt mềm mại, thanh lịch -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Cấu hình font chữ */
+        :root {
+            --font-hand: 'Dancing Script', cursive;
+            --font-serif: 'Playfair Display', serif;
+            --font-sans: 'Quicksand', sans-serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: linear-gradient(180deg, #b8dcff 0%, #d8ecff 45%, #fce4ec 82%, #fdf2f8 100%);
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-hand { font-family: var(--font-hand); }
+        .font-serif-vn { font-family: var(--font-serif); }
+
+        /* Canvas rừng hoa tràn màn hình */
+        #gardenCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+            z-index: 1;
+            transition: filter 1.2s cubic-bezier(0.22, 1, 0.36, 1), transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        #gardenCanvas.blurred {
+            filter: blur(5px) brightness(0.95);
+            transform: scale(1.03);
+        }
+
+        /* Canvas pháo hoa cánh hoa & trái tim nằm trên cùng */
+        #celebrationCanvas {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 60;
+        }
+
+        /* Hiệu ứng trôi nổi nhẹ nhàng cho phong bì */
+        @keyframes floatEnvelope {
+            0%, 100% { transform: translateY(0px) rotate(-0.5deg); }
+            50% { transform: translateY(-10px) rotate(0.5deg); }
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 28px rgba(125, 211, 252, 0.55), 0 14px 36px rgba(56, 189, 248, 0.25); }
+            50% { box-shadow: 0 0 46px rgba(125, 211, 252, 0.85), 0 18px 46px rgba(244, 114, 182, 0.32); }
+        }
+
+        .envelope-float {
+            animation: floatEnvelope 4.5s ease-in-out infinite;
+        }
+
+        /* Phong bì 3D mở nắp mượt mà */
+        .envelope-wrapper {
+            position: relative;
+            width: 240px;
+            height: 156px;
+            perspective: 900px;
+            cursor: pointer;
+        }
+
+        .envelope-body {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, #fffdf9 0%, #f3f9ff 100%);
+            border-radius: 14px;
+            border: 1.5px solid rgba(147, 197, 253, 0.7);
+            animation: pulseGlow 3.6s ease-in-out infinite;
+            overflow: visible;
+        }
+
+        /* Tờ thư nhỏ nhô lên khi mở phong bì */
+        .envelope-letter-peek {
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            bottom: 14px;
+            height: 120px;
+            background: #fffcf5;
+            border-radius: 8px;
+            border: 1px solid rgba(186, 230, 253, 0.8);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+            transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .envelope-wrapper.opening .envelope-letter-peek {
+            transform: translateY(-78px);
+        }
+
+        /* Nắp phong bì trên */
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 86px;
+            background: linear-gradient(180deg, #e0f2fe 0%, #f8fafc 100%);
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top center;
+            transition: transform 0.75s cubic-bezier(0.34, 1.26, 0.64, 1);
+            z-index: 4;
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+            filter: drop-shadow(0 3px 5px rgba(56, 189, 248, 0.18));
+        }
+
+        .envelope-wrapper.opening .envelope-flap {
+            transform: rotateX(180deg);
+            z-index: 1;
+        }
+
+        /* Mặt trước phong bì che tờ thư */
+        .envelope-front {
+            position: absolute;
+            inset: 0;
+            z-index: 3;
+            border-radius: 14px;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .envelope-front::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(224, 242, 254, 0.65) 50%, transparent 50%);
+            clip-path: polygon(0 0, 52% 55%, 0 100%);
+        }
+
+        .envelope-front::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(225deg, rgba(252, 231, 243, 0.65) 50%, transparent 50%);
+            clip-path: polygon(100% 0, 48% 55%, 100% 100%);
+        }
+
+        .envelope-bottom-fold {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 92px;
+            background: linear-gradient(0deg, #ffffff 0%, #f0f9ff 100%);
+            clip-path: polygon(0 100%, 50% 12%, 100% 100%);
+            z-index: 3;
+            border-bottom-left-radius: 14px;
+            border-bottom-right-radius: 14px;
+            pointer-events: none;
+        }
+
+        /* Con dấu sáp trái tim xanh */
+        .wax-seal {
+            position: absolute;
+            top: 66px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 38px;
+            height: 38px;
+            border-radius: 9999px;
+            background: radial-gradient(circle at 35% 35%, #7dd3fc, #38bdf8 60%, #0284c7 100%);
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4), inset 0 1px 2px rgba(255,255,255,0.65);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .envelope-wrapper.opening .wax-seal {
+            opacity: 0;
+            transform: translateX(-50%) scale(0.5);
+        }
+
+        /* Giấy viết thư cổ điển thanh lịch */
+        .letter-paper {
+            background-color: #fffdf7;
+            background-image:
+                radial-gradient(rgba(147, 197, 253, 0.14) 1px, transparent 0),
+                linear-gradient(180deg, rgba(255, 253, 247, 0.96) 0%, rgba(254, 249, 242, 0.98) 100%);
+            background-size: 24px 24px, 100% 100%;
+            box-shadow:
+                0 25px 60px -12px rgba(15, 23, 42, 0.22),
+                0 0 0 1px rgba(186, 230, 253, 0.65),
+                inset 0 0 40px rgba(254, 243, 199, 0.38);
+        }
+
+        /* Thanh cuộn tinh tế cho lá thư */
+        .custom-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: rgba(147, 197, 253, 0.55);
+            border-radius: 9999px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(96, 165, 250, 0.8);
+        }
+
+        /* Hiệu ứng hiện dần của lá thư */
+        @keyframes paperReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(36px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .animate-paper-reveal {
+            animation: paperReveal 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        /* Hiệu ứng sóng âm thanh nhẹ khi nhạc đang phát */
+        @keyframes soundBar {
+            0%, 100% { height: 5px; }
+            50% { height: 14px; }
+        }
+        .music-bar-1 { animation: soundBar 0.9s ease-in-out infinite; }
+        .music-bar-2 { animation: soundBar 0.7s ease-in-out infinite 0.15s; }
+        .music-bar-3 { animation: soundBar 1.05s ease-in-out infinite 0.3s; }
+
+        /* Hiệu ứng nhịp đập trái tim nhẹ */
+        @keyframes softBeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+        .heart-beat {
+            animation: softBeat 1.8s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="text-slate-700 antialiased">
+
+    <!-- Canvas 1: Rừng hoa hồng & hoa tulip xanh trời + cánh hoa rơi + đom đóm -->
+    <canvas id="gardenCanvas"></canvas>
+
+    <!-- Canvas 2: Pháo hoa cánh hoa xanh trời & trái tim khi đồng ý tha lỗi -->
+    <canvas id="celebrationCanvas"></canvas>
+
+    <!-- Thanh điều khiển góc trên (Nhạc nền & Nút chỉnh sửa kín đáo) -->
+    <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
+        <!-- Nút quay lại ngắm rừng hoa (chỉ hiện khi đang đọc thư) -->
+        <button id="backToGardenBtn"
+            class="hidden items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/75 hover:bg-white/95 backdrop-blur-md text-sky-700 text-xs sm:text-sm font-semibold shadow-sm border border-sky-200/70 transition-all duration-300 hover:scale-105 active:scale-95"
+            title="Ngắm lại rừng hoa">
+            <span>🌷</span>
+            <span class="hidden sm:inline">Ngắm rừng hoa</span>
+        </button>
+
+        <!-- Nút bật/tắt nhạc nền hộp nhạc -->
+        <button id="musicToggleBtn"
+            class="flex items-center gap-2 px-3.5 py-2 rounded-full bg-white/75 hover:bg-white/95 backdrop-blur-md text-sky-700 text-xs sm:text-sm font-semibold shadow-sm border border-sky-200/70 transition-all duration-300 hover:scale-105 active:scale-95"
+            aria-label="Bật hoặc tắt nhạc nền">
+            <div id="musicIconPaused" class="flex items-center gap-1.5">
+                <svg class="w-4 h-4 text-sky-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"/>
+                </svg>
+                <span class="hidden sm:inline">Bật nhạc</span>
+            </div>
+            <div id="musicIconPlaying" class="hidden items-center gap-2">
+                <div class="flex items-end gap-0.5 h-4">
+                    <span class="w-0.5 bg-sky-500 rounded-full music-bar-1"></span>
+                    <span class="w-0.5 bg-pink-400 rounded-full music-bar-2"></span>
+                    <span class="w-0.5 bg-sky-400 rounded-full music-bar-3"></span>
+                </div>
+                <span class="hidden sm:inline">Đang phát</span>
+            </div>
+        </button>
+
+        <!-- Nút chỉnh sửa thư kín đáo (có thể ẩn khi chuyển sang chế độ gửi đi) -->
+        <button id="editLetterBtn"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white/60 hover:bg-white/95 backdrop-blur-md text-slate-600 hover:text-sky-700 text-xs font-medium shadow-sm border border-white/80 transition-all duration-300 opacity-80 hover:opacity-100"
+            title="Sửa nội dung lá thư & cài đặt thông báo">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+            </svg>
+            <span class="hidden sm:inline">Sửa thư &amp; Cài đặt</span>
+        </button>
+    </div>
+
+    <!-- MÀN HÌNH 1: RỪNG HOA & PHONG BÌ MỞ ĐẦU -->
+    <main id="introScreen" class="fixed inset-0 z-20 flex flex-col items-center justify-center px-4 pb-16 sm:pb-12 transition-all duration-1000">
+        <!-- Thẻ kính mờ nhẹ phía sau phong bì -->
+        <div class="flex flex-col items-center text-center max-w-md w-full">
+            <!-- Dòng chữ nhỏ thơ mộng -->
+            <p class="text-sky-800/85 bg-white/55 backdrop-blur-md px-4 py-1.5 rounded-full text-xs sm:text-sm font-medium tracking-wide shadow-sm border border-white/70 mb-5">
+                ✨ Một khu rừng hoa hồng &amp; tulip xanh dành riêng cho em ✨
+            </p>
+
+            <!-- Phong bì phát sáng ở trung tâm -->
+            <div class="envelope-float mb-6">
+                <div id="envelopeBox" class="envelope-wrapper mx-auto" role="button" tabindex="0" aria-label="Mở phong bì thư">
+                    <div class="envelope-body">
+                        <!-- Tờ thư nhỏ bên trong -->
+                        <div class="envelope-letter-peek">
+                            <span class="font-hand text-sky-600 text-lg leading-tight">Xin lỗi em...</span>
+                            <div class="w-16 h-0.5 bg-sky-200 rounded-full my-1.5"></div>
+                            <div class="w-24 h-1 bg-slate-200/80 rounded-full mb-1"></div>
+                            <div class="w-20 h-1 bg-slate-200/70 rounded-full"></div>
+                        </div>
+                        <!-- Nắp trên phong bì -->
+                        <div class="envelope-flap"></div>
+                        <!-- Mặt gấp trái phải & đáy -->
+                        <div class="envelope-front"></div>
+                        <div class="envelope-bottom-fold"></div>
+                        <!-- Con dấu trái tim xanh -->
+                        <div class="wax-seal">
+                            <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tiêu đề mời mở thư -->
+            <h1 id="introTitle" class="font-hand text-4xl sm:text-5xl text-slate-800 drop-shadow-[0_2px_10px_rgba(255,255,255,0.95)] mb-2">
+                Gửi người anh thương...
+            </h1>
+            <p class="text-slate-700/90 text-sm sm:text-base font-medium bg-white/45 backdrop-blur-sm px-4 py-1 rounded-full mb-6">
+                Anh có đôi lời thật lòng muốn gửi đến em
+            </p>
+
+            <!-- Nút Mở lá thư -->
+            <button id="openLetterBtn"
+                class="group relative inline-flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-semibold text-base shadow-lg shadow-sky-400/40 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-sky-400/55 active:scale-95">
+                <span>Mở lá thư</span>
+                <span class="text-lg transition-transform duration-300 group-hover:scale-125">💙</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- MÀN HÌNH 2: LÁ THƯ XIN LỖI TRÊN GIẤY CỔ ĐIỂN -->
+    <section id="letterScreen" class="fixed inset-0 z-30 hidden items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div id="letterCard" class="letter-paper relative w-full max-w-2xl max-h-[88vh] rounded-3xl overflow-hidden flex flex-col border border-sky-200/80 my-auto">
+
+            <!-- Viền trang trí hoa Tulip xanh & Hoa Hồng bằng SVG ở 2 góc trên -->
+            <div class="pointer-events-none absolute top-0 left-0 w-24 sm:w-32 h-24 sm:h-32 opacity-85 z-10">
+                <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <!-- Lá xanh dịu -->
+                    <path d="M12 105 C 24 72, 42 52, 68 38" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M26 78 C 14 62, 18 42, 34 36 C 36 52, 34 66, 26 78 Z" fill="#a7f3d0" opacity="0.8"/>
+                    <path d="M44 58 C 58 46, 76 48, 84 36 C 68 34, 52 42, 44 58 Z" fill="#6ee7b7" opacity="0.7"/>
+                    <!-- Hoa Tulip xanh trời góc trái -->
+                    <g transform="translate(26, 24) rotate(-25)">
+                        <path d="M18 36 C 4 32, 0 14, 8 4 C 14 10, 18 18, 18 36 Z" fill="#7dd3fc"/>
+                        <path d="M18 36 C 32 32, 36 14, 28 4 C 22 10, 18 18, 18 36 Z" fill="#38bdf8"/>
+                        <path d="M18 36 C 8 28, 10 8, 18 0 C 26 8, 28 28, 18 36 Z" fill="#bae6fd"/>
+                    </g>
+                    <!-- Hoa hồng phấn nhỏ -->
+                    <g transform="translate(62, 14)">
+                        <circle cx="16" cy="16" r="13" fill="#fbcfe8"/>
+                        <circle cx="15" cy="15" r="9" fill="#f9a8d4"/>
+                        <circle cx="16" cy="16" r="5" fill="#f472b6"/>
+                        <path d="M13 15 C 14 12, 18 12, 19 15" stroke="#fdf2f8" stroke-width="1.5" stroke-linecap="round"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="pointer-events-none absolute top-0 right-0 w-24 sm:w-32 h-24 sm:h-32 opacity-85 z-10 scale-x-[-1]">
+                <svg viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
+                    <path d="M12 105 C 24 72, 42 52, 68 38" stroke="#6ee7b7" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M26 78 C 14 62, 18 42, 34 36 C 36 52, 34 66, 26 78 Z" fill="#a7f3d0" opacity="0.8"/>
+                    <path d="M44 58 C 58 46, 76 48, 84 36 C 68 34, 52 42, 44 58 Z" fill="#6ee7b7" opacity="0.7"/>
+                    <g transform="translate(26, 24) rotate(-25)">
+                        <path d="M18 36 C 4 32, 0 14, 8 4 C 14 10, 18 18, 18 36 Z" fill="#7dd3fc"/>
+                        <path d="M18 36 C 32 32, 36 14, 28 4 C 22 10, 18 18, 18 36 Z" fill="#38bdf8"/>
+                        <path d="M18 36 C 8 28, 10 8, 18 0 C 26 8, 28 28, 18 36 Z" fill="#bae6fd"/>
+                    </g>
+                    <g transform="translate(62, 14)">
+                        <circle cx="16" cy="16" r="13" fill="#fbcfe8"/>
+                        <circle cx="15" cy="15" r="9" fill="#f9a8d4"/>
+                        <circle cx="16" cy="16" r="5" fill="#f472b6"/>
+                        <path d="M13 15 C 14 12, 18 12, 19 15" stroke="#fdf2f8" stroke-width="1.5" stroke-linecap="round"/>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Viền khung mảnh bên trong tờ giấy -->
+            <div class="pointer-events-none absolute inset-3 sm:inset-4 rounded-2xl border border-sky-200/70"></div>
+
+            <!-- Nội dung lá thư có thể cuộn mượt -->
+            <div class="relative z-10 overflow-y-auto custom-scroll px-7 py-9 sm:px-14 sm:py-12">
+                <!-- Biểu tượng nhỏ trên đầu thư -->
+                <div class="flex flex-col items-center mb-5">
+                    <div class="inline-flex items-center gap-2 text-sky-400 text-xs tracking-[0.2em] uppercase font-semibold">
+                        <span>🌷</span>
+                        <span>Thư Xin Lỗi</span>
+                        <span>🌹</span>
+                    </div>
+                    <div class="w-16 h-0.5 bg-gradient-to-r from-transparent via-sky-300 to-transparent mt-2"></div>
+                </div>
+
+                <!-- Lời chào người nhận -->
+                <h2 id="letterGreeting" class="font-hand text-3xl sm:text-4xl text-sky-700 mb-5">
+                    Gửi người thương,
+                </h2>
+
+                <!-- Nội dung các đoạn thư -->
+                <div id="letterBody" class="font-serif-vn text-slate-700 text-[15.5px] sm:text-[17px] leading-[1.9] space-y-4">
+                    <!-- Nội dung sẽ được render bằng JS -->
+                </div>
+
+                <!-- Chữ ký -->
+                <div class="mt-8 text-right">
+                    <p class="text-slate-500 text-xs sm:text-sm italic mb-1">Thương em rất nhiều,</p>
+                    <p id="letterSignature" class="font-hand text-2xl sm:text-3xl text-sky-700">
+                        Người luôn thương em 💙
+                    </p>
+                </div>
+
+                <!-- Đường kẻ phân cách nhẹ -->
+                <div class="my-8 flex items-center justify-center gap-3">
+                    <div class="h-px flex-1 bg-gradient-to-r from-transparent to-sky-200"></div>
+                    <span class="text-sky-400 text-sm">💙</span>
+                    <div class="h-px flex-1 bg-gradient-to-l from-transparent to-pink-200"></div>
+                </div>
+
+                <!-- PHẦN TƯƠNG TÁC CUỐI THƯ -->
+                <div id="interactionArea" class="text-center pb-2">
+                    <p id="letterQuestion" class="font-hand text-3xl sm:text-4xl text-sky-700 font-semibold mb-6 drop-shadow-sm">
+                        Còn dận anhh hong...?
+                    </p>
+
+                    <!-- Hai nút lựa chọn: "Hết oiii" và nút "Còn" chạy trốn khắp màn hình -->
+                    <div id="confirmBtnContainer" class="flex items-center justify-center gap-4 min-h-[56px]">
+                        <button id="forgiveBtn"
+                            class="px-7 py-3 rounded-full bg-gradient-to-r from-sky-400 via-sky-500 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-bold text-base sm:text-lg shadow-lg shadow-sky-300/60 transition-all duration-300 hover:scale-105 active:scale-95">
+                            Hết oiii 💙
+                        </button>
+
+                        <button id="runawayBtn" type="button" tabindex="-1"
+                            class="px-6 py-3 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-600 font-semibold text-base sm:text-lg border border-pink-200 shadow-sm select-none">
+                            Còn
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Thông điệp ngọt ngào sau khi bấm "Hết oiii" -->
+                <div id="forgivenMessage" class="hidden text-center py-6 px-5 rounded-3xl bg-gradient-to-br from-sky-50 via-white to-pink-50 border border-sky-200/80 shadow-inner">
+                    <!-- Hình minh họa hộp quà & trái tim dễ thương -->
+                    <div class="flex items-center justify-center mb-3">
+                        <div class="relative inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-sky-100 to-pink-100 shadow-md heart-beat">
+                            <svg class="w-12 h-12" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Hộp quà pastel xanh trời & ruy băng hồng -->
+                                <rect x="10" y="26" width="44" height="28" rx="6" fill="#7dd3fc"/>
+                                <rect x="7" y="19" width="50" height="10" rx="4" fill="#38bdf8"/>
+                                <rect x="28" y="19" width="8" height="35" fill="#f472b6"/>
+                                <path d="M32 19 C24 8, 13 12, 18 19 C22 21, 28 20, 32 19 Z" fill="#f9a8d4"/>
+                                <path d="M32 19 C40 8, 51 12, 46 19 C42 21, 36 20, 32 19 Z" fill="#f472b6"/>
+                                <!-- Trái tim nhỏ lấp lánh trên hộp quà -->
+                                <path d="M32 15 C32 15, 27 11, 27 8.5 C27 7, 28.2 6, 29.5 6 C30.6 6, 31.5 6.7, 32 7.5 C32.5 6.7, 33.4 6, 34.5 6 C35.8 6, 37 7, 37 8.5 C37 11, 32 15, 32 15 Z" fill="#fb7185"/>
+                            </svg>
+                            <span class="absolute -top-1 -right-1 text-xl">💙</span>
+                        </div>
+                    </div>
+
+                    <h3 class="font-hand text-3xl sm:text-4xl text-sky-600 leading-snug mb-3">
+                        Phần quà sẽ được ship đến nhà em vào một ngày đẹp trời
+                    </h3>
+                    <p class="text-slate-600 text-sm sm:text-base leading-relaxed max-w-md mx-auto mb-5">
+                        Cảm ơn em đã hết giận và bao dung cho anh! Anh thương em nhiều lắm, chuẩn bị nhận quà và một cái ôm thật chặt từ anh nhé 🌷🌹
+                    </p>
+                    <button id="replayCelebrationBtn"
+                        class="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-white hover:bg-sky-50 text-sky-600 text-xs sm:text-sm font-semibold border border-sky-200 shadow-sm transition-all hover:scale-105 active:scale-95">
+                        <span>✨</span> Thả thêm cánh hoa &amp; trái tim
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODAL CHỈNH SỬA LÁ THƯ, CÀI ĐẶT THÔNG BÁO & XEM TRẠNG THÁI -->
+    <div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/45 backdrop-blur-sm">
+        <div class="bg-white rounded-3xl w-full max-w-xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl border border-sky-100">
+            <!-- Tiêu đề Modal -->
+            <div class="flex items-center justify-between px-6 pt-5 pb-3 border-b border-slate-100">
+                <h3 class="font-serif-vn text-lg sm:text-xl font-semibold text-slate-800 flex items-center gap-2">
+                    <span>✍️</span> Sửa thư &amp; Cài đặt
+                </h3>
+                <button id="closeEditModalBtn" class="p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Thanh chuyển Tab -->
+            <div class="flex gap-1.5 px-6 pt-3 pb-2 bg-slate-50/70 border-b border-slate-100 text-xs sm:text-sm font-semibold">
+                <button id="tabBtnLetter" class="modal-tab-btn flex-1 py-2 px-3 rounded-xl bg-sky-500 text-white shadow-sm transition">
+                    ✍️ Nội dung thư
+                </button>
+                <button id="tabBtnNotify" class="modal-tab-btn flex-1 py-2 px-3 rounded-xl text-slate-600 hover:bg-white transition">
+                    🔔 Thông báo
+                </button>
+                <button id="tabBtnHistory" class="modal-tab-btn flex-1 py-2 px-3 rounded-xl text-slate-600 hover:bg-white transition relative">
+                    💌 Trạng thái
+                    <span id="historyCountBadge" class="hidden ml-1 px-1.5 py-0.5 text-[10px] rounded-full bg-pink-500 text-white">0</span>
+                </button>
+            </div>
+
+            <!-- Nội dung cuộn của Modal -->
+            <div class="overflow-y-auto custom-scroll p-6 text-sm space-y-4">
+                <!-- TAB 1: NỘI DUNG LÁ THƯ -->
+                <div id="tabPanelLetter" class="space-y-4">
+                    <div>
+                        <label for="inputIntroTitle" class="block font-semibold text-slate-600 mb-1">Dòng chữ trên màn hình rừng hoa</label>
+                        <input id="inputIntroTitle" type="text"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition"
+                            placeholder="Ví dụ: Gửi người anh thương...">
+                    </div>
+
+                    <div>
+                        <label for="inputGreeting" class="block font-semibold text-slate-600 mb-1">Lời chào đầu thư (Tên người nhận)</label>
+                        <input id="inputGreeting" type="text"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition"
+                            placeholder="Ví dụ: Gửi em yêu của anh,">
+                    </div>
+
+                    <div>
+                        <label for="inputBody" class="block font-semibold text-slate-600 mb-1">Nội dung lá thư xin lỗi</label>
+                        <textarea id="inputBody" rows="6"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition leading-relaxed"
+                            placeholder="Viết những lời thật lòng của bạn... (Xuống dòng để tách đoạn)"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label for="inputSignature" class="block font-semibold text-slate-600 mb-1">Tên người gửi (Chữ ký)</label>
+                            <input id="inputSignature" type="text"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition"
+                                placeholder="Ví dụ: Anh của em 💙">
+                        </div>
+                        <div>
+                            <label for="inputQuestion" class="block font-semibold text-slate-600 mb-1">Câu hỏi xác nhận cuối thư</label>
+                            <input id="inputQuestion" type="text"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition"
+                                placeholder="Còn dận anhh hong...?">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: CÀI ĐẶT THÔNG BÁO TỨC THÌ (WEBHOOK) -->
+                <div id="tabPanelNotify" class="hidden space-y-4">
+                    <div class="p-3.5 rounded-2xl bg-sky-50 border border-sky-200/70 text-xs text-sky-800 leading-relaxed">
+                        💡 Khi người thương bấm <strong>"Hết oiii"</strong>, hệ thống sẽ tự động ghi nhận vào lịch sử ở tab <strong>Trạng thái</strong> và gửi tin nhắn báo ngay về máy bạn qua Telegram, Discord hoặc Formspree/Webhook bạn cấu hình bên dưới.
+                    </div>
+
+                    <!-- Discord / Formspree / Webhook URL -->
+                    <div>
+                        <label for="inputWebhookUrl" class="block font-semibold text-slate-700 mb-1">Discord Webhook / Formspree / Webhook URL</label>
+                        <input id="inputWebhookUrl" type="url"
+                            class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition text-xs sm:text-sm"
+                            placeholder="https://discord.com/api/webhooks/... hoặc https://formspree.io/f/...">
+                    </div>
+
+                    <!-- Telegram Bot Token & Chat ID -->
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                        <p class="font-semibold text-slate-700 text-xs flex items-center gap-1.5">
+                            <span>✈️</span> Hoặc nhận thông báo qua Telegram Bot
+                        </p>
+                        <div>
+                            <label for="inputTelegramToken" class="block text-xs font-medium text-slate-600 mb-1">Telegram Bot Token</label>
+                            <input id="inputTelegramToken" type="text"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition text-xs"
+                                placeholder="Ví dụ: 123456789:ABCdefGHIjklMNOpqrsTUVwxyz">
+                        </div>
+                        <div>
+                            <label for="inputTelegramChatId" class="block text-xs font-medium text-slate-600 mb-1">Telegram Chat ID</label>
+                            <input id="inputTelegramChatId" type="text"
+                                class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white focus:border-sky-400 focus:ring-2 focus:ring-sky-200 outline-none transition text-xs"
+                                placeholder="Ví dụ: 987654321">
+                        </div>
+                    </div>
+
+                    <button id="testWebhookBtn" type="button"
+                        class="w-full py-2.5 px-4 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs sm:text-sm border border-sky-200 transition">
+                        🚀 Gửi thử thông báo ngay
+                    </button>
+                </div>
+
+                <!-- TAB 3: LỊCH SỬ XÁC NHẬN TỪ NGƯỜI THƯƠNG -->
+                <div id="tabPanelHistory" class="hidden space-y-3">
+                    <div class="flex items-center justify-between">
+                        <p class="text-xs font-semibold text-slate-600">Lịch sử bấm "Hết oiii 💙" (cập nhật tự động)</p>
+                        <span id="syncStatusText" class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            ● Đang đồng bộ
+                        </span>
+                    </div>
+
+                    <div id="confirmationHistoryList" class="space-y-2.5 max-h-60 overflow-y-auto custom-scroll pr-1">
+                        <div class="text-center py-8 text-slate-400 text-xs">
+                            Chưa có lượt xác nhận nào. Khi người thương bấm "Hết oiii", thông báo sẽ hiện ngay tại đây 💙
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Thanh nút hành động chung ở đáy Modal -->
+                <div class="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
+                    <button id="saveLetterBtn"
+                        class="w-full py-2.5 rounded-xl bg-gradient-to-r from-sky-400 to-blue-500 hover:from-sky-500 hover:to-blue-600 text-white font-semibold shadow-md transition active:scale-[0.99]">
+                        Lưu thư &amp; Cài đặt 💙
+                    </button>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="previewSendModeBtn"
+                            class="py-2 px-3 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700 font-semibold text-xs border border-sky-200 transition">
+                            👁️ Chế độ gửi đi (Ẩn nút sửa)
+                        </button>
+                        <button id="copyShareLinkBtn"
+                            class="py-2 px-3 rounded-xl bg-pink-50 hover:bg-pink-100 text-pink-700 font-semibold text-xs border border-pink-200 transition">
+                            🔗 Sao chép link gửi đi
+                        </button>
+                    </div>
+
+                    <button id="resetDefaultBtn"
+                        class="w-full py-1.5 text-xs text-slate-400 hover:text-slate-600 transition">
+                        Khôi phục nội dung mặc định
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thông báo nhỏ (Toast) thay thế hoàn toàn cho alert() -->
+    <div id="toastBox" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] pointer-events-none opacity-0 translate-y-4 transition-all duration-300">
+        <div id="toastMessage" class="px-5 py-2.5 rounded-full bg-slate-800/90 text-white text-xs sm:text-sm font-medium shadow-lg backdrop-blur-md whitespace-nowrap">
+            Đã lưu lá thư!
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, addDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        /* =========================================================================
+           1. KHỞI TẠO FIREBASE, DỮ LIỆU LÁ THƯ & ĐỒNG BỘ THỜI GIAN THỰC
+        ========================================================================= */
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+
+        const DEFAULT_LETTER = {
+            introTitle: 'Gửi người anh thương...',
+            greeting: 'Gửi người thương,',
+            body: `Anh viết những dòng này giữa một khu rừng nhỏ có hoa hồng và những bông tulip xanh trời — loài hoa dịu dàng giống như cảm giác bình yên mỗi khi anh được ở bên em.
+
+Anh thật sự rất xin lỗi vì những lời nói và sự vô tâm vừa rồi đã làm em buồn lòng. Khi thấy em im lặng và tổn thương, lòng anh chẳng hề dễ chịu chút nào. Anh nhận ra rằng dù vì bất kỳ lý do gì, anh cũng không nên để người mình thương nhất phải tủi thân như thế.
+
+Cảm ơn em vì đã luôn ở đây, đã dịu dàng và kiên nhẫn với anh suốt thời gian qua. Anh không muốn mất đi nụ cười của em, càng không muốn những hiểu lầm nhỏ bé làm chúng ta xa cách.
+
+Mong rằng lá thư nhỏ này và những cánh hoa xanh trời sẽ thay anh gửi đến em một cái ôm thật ấm áp.`,
+            signature: 'Người luôn thương em 💙',
+            question: 'Còn dận anhh hong...?',
+            webhookUrl: '',
+            telegramToken: '',
+            telegramChatId: ''
+        };
+
+        let currentLetter = { ...DEFAULT_LETTER };
+        let confirmationRecords = [];
+        let isForgivenState = false;
+
+        // Kiểm tra chế độ chỉ xem qua URL (?view=letter hoặc #letter=...)
+        function checkViewOnlyMode() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('view') === 'letter') {
+                document.getElementById('editLetterBtn').classList.add('hidden');
+            }
+            try {
+                const hash = window.location.hash;
+                if (hash && hash.startsWith('#letter=')) {
+                    const encoded = hash.slice(8);
+                    const jsonStr = decodeURIComponent(escape(atob(encoded)));
+                    const parsed = JSON.parse(jsonStr);
+                    if (parsed && parsed.greeting && parsed.body) {
+                        currentLetter = { ...DEFAULT_LETTER, ...parsed };
+                        document.getElementById('editLetterBtn').classList.add('hidden');
+                    }
+                }
+            } catch (e) {
+                console.warn('Không thể đọc dữ liệu từ đường dẫn:', e);
+            }
+        }
+
+        // Khởi tạo kết nối đám mây và đăng nhập ẩn danh tự động (không hiện màn hình đăng nhập)
+        async function initCloudSync() {
+            const syncStatusEl = document.getElementById('syncStatusText');
+            try {
+                if (typeof __firebase_config === 'undefined' || !__firebase_config) {
+                    if (syncStatusEl) {
+                        syncStatusEl.textContent = '● Chế độ cục bộ';
+                        syncStatusEl.className = 'text-[11px] px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200';
+                    }
+                    return;
+                }
+
+                const firebaseConfig = JSON.parse(__firebase_config);
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // RULE 3: Đăng nhập trước khi thực hiện mọi thao tác Firestore
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = cred.user;
+                } else {
+                    const cred = await signInAnonymously(auth);
+                    currentUser = cred.user;
+                }
+
+                if (!currentUser) return;
+
+                // RULE 1: Đường dẫn chuẩn /artifacts/{appId}/public/data/{collectionName}
+                const letterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'apology_data', 'letter_config');
+                onSnapshot(letterDocRef, (snap) => {
+                    if (snap.exists()) {
+                        const data = snap.data();
+                        currentLetter = { ...DEFAULT_LETTER, ...data };
+                        renderLetter();
+                    }
+                }, (error) => {
+                    console.warn('Lỗi đồng bộ nội dung thư:', error);
+                });
+
+                // RULE 2: Truy vấn đơn giản collection(), sắp xếp trong bộ nhớ JS
+                const confirmationsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'confirmations');
+                onSnapshot(confirmationsColRef, (snapshot) => {
+                    const items = [];
+                    snapshot.forEach((docSnap) => {
+                        items.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    // Sắp xếp mới nhất lên đầu trong bộ nhớ JS
+                    items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    confirmationRecords = items;
+                    renderConfirmationHistory();
+                }, (error) => {
+                    console.warn('Lỗi đồng bộ lịch sử xác nhận:', error);
+                });
+            } catch (e) {
+                console.warn('Không thể kết nối dịch vụ đồng bộ:', e);
+                if (syncStatusEl) {
+                    syncStatusEl.textContent = '● Ngoại tuyến';
+                    syncStatusEl.className = 'text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200';
+                }
+            }
+        }
+
+        // Lưu nội dung thư & cấu hình Webhook lên Firestore
+        async function saveLetterToCloud(letterObj) {
+            if (!db || !currentUser) return false;
+            try {
+                const letterDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'apology_data', 'letter_config');
+                await setDoc(letterDocRef, {
+                    ...letterObj,
+                    updatedAt: Date.now()
+                });
+                return true;
+            } catch (e) {
+                console.warn('Lỗi lưu cấu hình lên đám mây:', e);
+                return false;
+            }
+        }
+
+        // Ghi nhận trạng thái bấm "Hết oiii" lên Firestore & gửi Webhook tức thì
+        async function notifySenderOnForgive(isTest = false) {
+            const now = new Date();
+            const readableTime = now.toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+
+            const msgText = isTest
+                ? `🧪 [Thử nghiệm] Thông báo từ trang web xin lỗi lúc ${readableTime}. Kết nối hoạt động tốt! 💙`
+                : `💙 TIN VUI RỒI!! Người thương (${currentLetter.greeting}) vừa bấm "Hết oiii 💙" lúc ${readableTime}!\n🎁 Chuẩn bị ship phần quà đến nhà em vào một ngày đẹp trời nha! 🌷🌹`;
+
+            // 1. Ghi nhận vào Firestore (nếu không phải gửi thử)
+            if (!isTest) {
+                const record = {
+                    status: 'Hết oiii 💙',
+                    greeting: currentLetter.greeting,
+                    timestamp: Date.now(),
+                    readableTime: readableTime
+                };
+
+                // Cập nhật ngay trong bộ nhớ để hiện tức thì nếu đang ngoại tuyến
+                if (!db || !currentUser) {
+                    confirmationRecords.unshift(record);
+                    renderConfirmationHistory();
+                } else {
+                    try {
+                        const confirmationsColRef = collection(db, 'artifacts', appId, 'public', 'data', 'confirmations');
+                        await addDoc(confirmationsColRef, record);
+                    } catch (e) {
+                        console.warn('Không thể ghi nhận lên đám mây:', e);
+                    }
+                }
+            }
+
+            // 2. Gửi thông báo qua Telegram Bot (nếu đã cấu hình)
+            let sentWebhook = false;
+            const tgToken = (currentLetter.telegramToken || '').trim();
+            const tgChatId = (currentLetter.telegramChatId || '').trim();
+            if (tgToken && tgChatId) {
+                try {
+                    await fetch(`https://api.telegram.org/bot${encodeURIComponent(tgToken)}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            chat_id: tgChatId,
+                            text: msgText
+                        })
+                    });
+                    sentWebhook = true;
+                } catch (e) {
+                    console.warn('Lỗi gửi Telegram:', e);
+                }
+            }
+
+            // 3. Gửi thông báo qua Discord Webhook / Formspree / Webhook URL
+            const hookUrl = (currentLetter.webhookUrl || '').trim();
+            if (hookUrl) {
+                try {
+                    const isDiscord = hookUrl.includes('discord.com/api/webhooks') || hookUrl.includes('discordapp.com/api/webhooks');
+                    const payload = isDiscord
+                        ? { content: msgText }
+                        : {
+                            status: isTest ? 'Test' : 'Hết oiii 💙',
+                            message: msgText,
+                            time: readableTime,
+                            greeting: currentLetter.greeting
+                        };
+
+                    await fetch(hookUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    sentWebhook = true;
+                } catch (e) {
+                    console.warn('Lỗi gửi Webhook:', e);
+                }
+            }
+
+            return sentWebhook;
+        }
+
+        // Hiển thị danh sách lịch sử xác nhận trong Modal
+        function renderConfirmationHistory() {
+            const listEl = document.getElementById('confirmationHistoryList');
+            const badgeEl = document.getElementById('historyCountBadge');
+            if (!listEl || !badgeEl) return;
+
+            if (confirmationRecords.length > 0) {
+                badgeEl.textContent = String(confirmationRecords.length);
+                badgeEl.classList.remove('hidden');
+            } else {
+                badgeEl.classList.add('hidden');
+            }
+
+            if (confirmationRecords.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-xs">
+                        Chưa có lượt xác nhận nào. Khi người thương bấm "Hết oiii", thông báo sẽ hiện ngay tại đây 💙
+                    </div>`;
+                return;
+            }
+
+            listEl.innerHTML = '';
+            confirmationRecords.forEach((item) => {
+                const row = document.createElement('div');
+                row.className = 'flex items-center justify-between gap-3 p-3 rounded-2xl bg-sky-50/70 border border-sky-100';
+
+                const left = document.createElement('div');
+                const title = document.createElement('p');
+                title.className = 'font-semibold text-sky-700 text-xs sm:text-sm';
+                title.textContent = `💙 Đã bấm "${item.status || 'Hết oiii 💙'}"`;
+
+                const sub = document.createElement('p');
+                sub.className = 'text-[11px] text-slate-500 mt-0.5';
+                sub.textContent = item.readableTime || new Date(item.timestamp || Date.now()).toLocaleString('vi-VN');
+
+                left.appendChild(title);
+                left.appendChild(sub);
+
+                const tag = document.createElement('span');
+                tag.className = 'shrink-0 px-2.5 py-1 rounded-full bg-white text-pink-500 text-[11px] font-semibold border border-pink-100 shadow-sm';
+                tag.textContent = '🎁 Ship quà!';
+
+                row.appendChild(left);
+                row.appendChild(tag);
+                listEl.appendChild(row);
+            });
+        }
+
+        // Hiển thị nội dung lá thư lên giao diện
+        function renderLetter() {
+            document.getElementById('introTitle').textContent = currentLetter.introTitle;
+            document.getElementById('letterGreeting').textContent = currentLetter.greeting;
+            document.getElementById('letterSignature').textContent = currentLetter.signature;
+            document.getElementById('letterQuestion').textContent = currentLetter.question || 'Còn dận anhh hong...?';
+
+            const bodyContainer = document.getElementById('letterBody');
+            bodyContainer.innerHTML = '';
+            const paragraphs = currentLetter.body
+                .split(/\n+/)
+                .map(p => p.trim())
+                .filter(p => p.length > 0);
+
+            paragraphs.forEach(text => {
+                const p = document.createElement('p');
+                p.textContent = text;
+                bodyContainer.appendChild(p);
+            });
+        }
+
+        // Hiển thị thông báo nhỏ (Toast)
+        let toastTimer = null;
+        function showToast(message) {
+            const toastBox = document.getElementById('toastBox');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = message;
+            toastBox.classList.remove('opacity-0', 'translate-y-4');
+            toastBox.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                toastBox.classList.remove('opacity-100', 'translate-y-0');
+                toastBox.classList.add('opacity-0', 'translate-y-4');
+            }, 2800);
+        }
+
+        /* =========================================================================
+           2. NHẠC NỀN HỘP NHẠC / PIANO DỊU DÀNG BẰNG WEB AUDIO API
+        ========================================================================= */
+        class RomanticMusicBox {
+            constructor() {
+                this.ctx = null;
+                this.isPlaying = false;
+                this.timerId = null;
+                this.step = 0;
+
+                // Giai điệu êm dịu theo vòng hợp âm Cmaj7 - Am7 - Fmaj7 - G6 (nhịp chậm lãng mạn)
+                // Tần số nốt nhạc (Hz)
+                this.melody = [
+                    // Ô nhịp 1 (Cmaj7)
+                    { note: 523.25, bass: 130.81, dur: 0.9 }, // C5
+                    { note: 659.25, bass: null,   dur: 0.7 }, // E5
+                    { note: 783.99, bass: 196.00, dur: 0.9 }, // G5
+                    { note: 987.77, bass: null,   dur: 1.1 }, // B5
+                    { note: 783.99, bass: null,   dur: 0.8 }, // G5
+                    { note: 659.25, bass: null,   dur: 0.8 }, // E5
+
+                    // Ô nhịp 2 (Am7)
+                    { note: 523.25, bass: 220.00, dur: 0.9 }, // C5
+                    { note: 659.25, bass: null,   dur: 0.7 }, // E5
+                    { note: 783.99, bass: 164.81, dur: 0.9 }, // G5
+                    { note: 880.00, bass: null,   dur: 1.1 }, // A5
+                    { note: 783.99, bass: null,   dur: 0.8 }, // G5
+                    { note: 659.25, bass: null,   dur: 0.8 }, // E5
+
+                    // Ô nhịp 3 (Fmaj7)
+                    { note: 587.33, bass: 174.61, dur: 0.9 }, // D5
+                    { note: 659.25, bass: null,   dur: 0.7 }, // E5
+                    { note: 698.46, bass: 220.00, dur: 0.9 }, // F5
+                    { note: 880.00, bass: null,   dur: 1.1 }, // A5
+                    { note: 783.99, bass: null,   dur: 0.8 }, // G5
+                    { note: 659.25, bass: null,   dur: 0.8 }, // E5
+
+                    // Ô nhịp 4 (G6 -> G)
+                    { note: 587.33, bass: 196.00, dur: 0.9 }, // D5
+                    { note: 783.99, bass: null,   dur: 0.7 }, // G5
+                    { note: 659.25, bass: 146.83, dur: 0.9 }, // E5
+                    { note: 587.33, bass: null,   dur: 1.3 }, // D5
+                    { note: 523.25, bass: null,   dur: 1.1 }, // C5
+                    { note: null,   bass: null,   dur: 0.6 }  // Nghỉ nhẹ
+                ];
+            }
+
+            initContext() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, volume = 0.08, duration = 1.6, isBass = false) {
+                if (!this.ctx || !freq) return;
+                const now = this.ctx.currentTime;
+
+                const osc = this.ctx.createOscillator();
+                const oscHarmonic = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+
+                // Âm sắc hộp nhạc/piano điện ấm áp
+                osc.type = isBass ? 'sine' : 'triangle';
+                osc.frequency.setValueAtTime(freq, now);
+
+                oscHarmonic.type = 'sine';
+                oscHarmonic.frequency.setValueAtTime(freq * 2, now);
+
+                const harmonicGain = this.ctx.createGain();
+                harmonicGain.gain.setValueAtTime(isBass ? 0.05 : 0.14, now);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(isBass ? 600 : 2200, now);
+
+                // Đường bao âm thanh mềm mại (Attack nhẹ, Decay dài)
+                gain.gain.setValueAtTime(0.0001, now);
+                gain.gain.linearRampToValueAtTime(volume, now + 0.04);
+                gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+                osc.connect(filter);
+                oscHarmonic.connect(harmonicGain);
+                harmonicGain.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                oscHarmonic.start(now);
+                osc.stop(now + duration + 0.05);
+                oscHarmonic.stop(now + duration + 0.05);
+            }
+
+            scheduleNext() {
+                if (!this.isPlaying) return;
+                const item = this.melody[this.step % this.melody.length];
+                if (item.note) this.playTone(item.note, 0.075, 2.2, false);
+                if (item.bass) this.playTone(item.bass, 0.055, 2.8, true);
+
+                this.step++;
+                this.timerId = setTimeout(() => this.scheduleNext(), item.dur * 620);
+            }
+
+            start() {
+                try {
+                    this.initContext();
+                    if (this.isPlaying) return;
+                    this.isPlaying = true;
+                    this.scheduleNext();
+                    this.updateUI();
+                } catch (e) {
+                    console.warn('Trình duyệt chưa cho phép phát âm thanh:', e);
+                }
+            }
+
+            stop() {
+                this.isPlaying = false;
+                if (this.timerId) {
+                    clearTimeout(this.timerId);
+                    this.timerId = null;
+                }
+                this.updateUI();
+            }
+
+            toggle() {
+                if (this.isPlaying) this.stop();
+                else this.start();
+            }
+
+            // Hiệu ứng hợp âm lấp lánh nhẹ khi mở thư hoặc bấm tha lỗi
+            playChime() {
+                try {
+                    this.initContext();
+                    const notes = [523.25, 659.25, 783.99, 1046.5];
+                    notes.forEach((n, idx) => {
+                        setTimeout(() => this.playTone(n, 0.06, 1.5, false), idx * 110);
+                    });
+                } catch (e) {}
+            }
+
+            updateUI() {
+                const pausedEl = document.getElementById('musicIconPaused');
+                const playingEl = document.getElementById('musicIconPlaying');
+                if (this.isPlaying) {
+                    pausedEl.classList.add('hidden');
+                    playingEl.classList.remove('hidden');
+                    playingEl.classList.add('flex');
+                } else {
+                    pausedEl.classList.remove('hidden');
+                    playingEl.classList.add('hidden');
+                    playingEl.classList.remove('flex');
+                }
+            }
+        }
+
+        const musicBox = new RomanticMusicBox();
+
+        /* =========================================================================
+           3. VẼ RỪNG HOA HỒNG & HOA TULIP XANH TRỜI TRÊN CANVAS (ĐA LỚP, ĐUNG ĐƯA)
+        ========================================================================= */
+        const gardenCanvas = document.getElementById('gardenCanvas');
+        const gCtx = gardenCanvas.getContext('2d');
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        let flowers = [];
+        let fallingPetals = [];
+        let fireflies = [];
+        let clouds = [];
+        let windPointerOffset = 0;
+        let targetWindOffset = 0;
+
+        // Bảng màu hoa hồng (hồng phấn, đỏ dịu, trắng kem) và hoa tulip xanh trời
+        const ROSE_PALETTES = [
+            // Hồng phấn
+            { outer: '#fbcfe8', mid: '#f9a8d4', inner: '#f472b6', core: '#ec4899', highlight: '#fff1f2' },
+            // Đỏ dịu lãng mạn
+            { outer: '#fda4af', mid: '#fb7185', inner: '#f43f5e', core: '#e11d48', highlight: '#ffe4e6' },
+            // Trắng kem tinh khôi
+            { outer: '#f8fafc', mid: '#fffbeb', inner: '#fef3c7', core: '#fde68a', highlight: '#ffffff' }
+        ];
+
+        const BLUE_TULIP_PALETTES = [
+            // Xanh trời trong trẻo
+            { left: '#7dd3fc', right: '#38bdf8', center: '#bae6fd', tip: '#e0f2fe', base: '#0284c7' },
+            // Xanh pastel dịu
+            { left: '#93c5fd', right: '#60a5fa', center: '#dbeafe', tip: '#eff6ff', base: '#2563eb' },
+            // Xanh ngọc trời nhẹ
+            { left: '#67e8f9', right: '#38bdf8', center: '#cffafe', tip: '#ecfeff', base: '#0ea5e9' }
+        ];
+
+        // Khởi tạo kích thước Canvas & tái tạo rừng hoa theo màn hình
+        function resizeGarden() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            gardenCanvas.width = Math.floor(width * dpr);
+            gardenCanvas.height = Math.floor(height * dpr);
+            gCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            initGardenElements();
+        }
+
+        function initGardenElements() {
+            flowers = [];
+            fallingPetals = [];
+            fireflies = [];
+            clouds = [];
+
+            // Tạo mây pastel trôi lững lờ
+            for (let i = 0; i < 6; i++) {
+                clouds.push({
+                    x: Math.random() * width,
+                    y: height * (0.08 + Math.random() * 0.28),
+                    scale: 0.7 + Math.random() * 0.9,
+                    speed: 0.08 + Math.random() * 0.14,
+                    alpha: 0.28 + Math.random() * 0.25
+                });
+            }
+
+            // Tạo 3 lớp rừng hoa để tạo chiều sâu chân thực (0: xa, 1: giữa, 2: gần)
+            const densityFactor = Math.max(0.75, Math.min(1.5, width / 900));
+            const layerConfigs = [
+                { count: Math.floor(58 * densityFactor), minH: 0.34, maxH: 0.56, scale: 0.62, alpha: 0.78, yBaseOffset: 10 },
+                { count: Math.floor(48 * densityFactor), minH: 0.22, maxH: 0.43, scale: 0.85, alpha: 0.92, yBaseOffset: 24 },
+                { count: Math.floor(34 * densityFactor), minH: 0.13, maxH: 0.29, scale: 1.12, alpha: 1.0,  yBaseOffset: 42 }
+            ];
+
+            layerConfigs.forEach((cfg, layerIdx) => {
+                for (let i = 0; i < cfg.count; i++) {
+                    // Phân bố đều khắp chiều ngang + chút ngẫu nhiên tự nhiên
+                    const baseX = ((i + 0.5) / cfg.count) * (width + 80) - 40 + (Math.random() - 0.5) * 32;
+                    const stemHeight = height * (cfg.minH + Math.random() * (cfg.maxH - cfg.minH));
+                    // 55% Hoa tulip xanh trời, 45% Hoa hồng để cả hai loài đều thật nổi bật
+                    const isTulip = Math.random() < 0.55;
+
+                    const palette = isTulip
+                        ? BLUE_TULIP_PALETTES[Math.floor(Math.random() * BLUE_TULIP_PALETTES.length)]
+                        : ROSE_PALETTES[Math.floor(Math.random() * ROSE_PALETTES.length)];
+
+                    flowers.push({
+                        layer: layerIdx,
+                        type: isTulip ? 'tulip' : 'rose',
+                        x: baseX,
+                        baseY: height + cfg.yBaseOffset,
+                        stemHeight: stemHeight,
+                        scale: cfg.scale * (0.85 + Math.random() * 0.32),
+                        alpha: cfg.alpha,
+                        palette: palette,
+                        swayPhase: Math.random() * Math.PI * 2,
+                        swaySpeed: 0.0009 + Math.random() * 0.0007,
+                        swayAmp: (8 + Math.random() * 14) * cfg.scale,
+                        lean: (Math.random() - 0.5) * 0.24,
+                        leafSide: Math.random() < 0.5 ? -1 : 1,
+                        stemColor: layerIdx === 0 ? '#6aa888' : (layerIdx === 1 ? '#4d9b72' : '#3a865f')
+                    });
+                }
+            });
+
+            // Tạo cánh hoa rơi nhẹ
+            const petalCount = Math.floor(28 * densityFactor);
+            for (let i = 0; i < petalCount; i++) {
+                fallingPetals.push(createFallingPetal(true));
+            }
+
+            // Tạo đom đóm / hạt sáng lung linh
+            const fireflyCount = Math.floor(34 * densityFactor);
+            for (let i = 0; i < fireflyCount; i++) {
+                fireflies.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height * 0.92,
+                    r: 1.4 + Math.random() * 2.6,
+                    vx: (Math.random() - 0.5) * 0.35,
+                    vy: -0.12 - Math.random() * 0.28,
+                    phase: Math.random() * Math.PI * 2,
+                    glowSpeed: 0.002 + Math.random() * 0.003,
+                    color: Math.random() < 0.55 ? '186, 230, 253' : '254, 240, 138'
+                });
+            }
+        }
+
+        function createFallingPetal(randomY = false) {
+            const isBlue = Math.random() < 0.55;
+            const colors = isBlue
+                ? ['#bae6fd', '#7dd3fc', '#93c5fd']
+                : ['#fbcfe8', '#fda4af', '#fff1f2'];
+            return {
+                x: Math.random() * width,
+                y: randomY ? Math.random() * height : -20,
+                size: 5 + Math.random() * 6,
+                speedY: 0.45 + Math.random() * 0.75,
+                speedX: -0.3 + Math.random() * 0.8,
+                angle: Math.random() * Math.PI * 2,
+                spin: (Math.random() - 0.5) * 0.025,
+                flutterPhase: Math.random() * Math.PI * 2,
+                color: colors[Math.floor(Math.random() * colors.length)],
+                alpha: 0.55 + Math.random() * 0.35
+            };
+        }
+
+        // Vẽ bầu trời pastel xanh dịu chuyển sắc lãng mạn
+        function drawSkyAndAtmosphere(time) {
+            const skyGrad = gCtx.createLinearGradient(0, 0, 0, height);
+            skyGrad.addColorStop(0, '#9bd0ff');
+            skyGrad.addColorStop(0.35, '#cce7ff');
+            skyGrad.addColorStop(0.68, '#f5e4f3');
+            skyGrad.addColorStop(1, '#d1eadb');
+            gCtx.fillStyle = skyGrad;
+            gCtx.fillRect(0, 0, width, height);
+
+            // Quầng sáng dịu nhẹ trên bầu trời
+            const sunX = width * 0.5;
+            const sunY = height * 0.28;
+            const sunGrad = gCtx.createRadialGradient(sunX, sunY, 10, sunX, sunY, Math.max(width, height) * 0.45);
+            sunGrad.addColorStop(0, 'rgba(255, 253, 244, 0.72)');
+            sunGrad.addColorStop(0.4, 'rgba(224, 242, 254, 0.32)');
+            sunGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            gCtx.fillStyle = sunGrad;
+            gCtx.fillRect(0, 0, width, height);
+
+            // Vẽ mây trôi bồng bềnh
+            clouds.forEach(c => {
+                c.x += c.speed;
+                if (c.x - 160 * c.scale > width) c.x = -160 * c.scale;
+
+                gCtx.save();
+                gCtx.translate(c.x, c.y);
+                gCtx.scale(c.scale, c.scale);
+                gCtx.fillStyle = `rgba(255, 255, 255, ${c.alpha})`;
+                gCtx.beginPath();
+                gCtx.arc(0, 0, 38, 0, Math.PI * 2);
+                gCtx.arc(34, -10, 44, 0, Math.PI * 2);
+                gCtx.arc(76, 0, 34, 0, Math.PI * 2);
+                gCtx.arc(38, 12, 32, 0, Math.PI * 2);
+                gCtx.fill();
+                gCtx.restore();
+            });
+
+            // Đồi cỏ xanh dịu phía xa để rừng hoa có chiều sâu
+            gCtx.fillStyle = 'rgba(134, 197, 163, 0.45)';
+            gCtx.beginPath();
+            gCtx.moveTo(0, height);
+            gCtx.lineTo(0, height * 0.76);
+            gCtx.quadraticCurveTo(width * 0.28, height * 0.68, width * 0.55, height * 0.75);
+            gCtx.quadraticCurveTo(width * 0.82, height * 0.82, width, height * 0.73);
+            gCtx.lineTo(width, height);
+            gCtx.closePath();
+            gCtx.fill();
+        }
+
+        // Vẽ một bông Hoa Tulip màu xanh trời tinh xảo
+        function drawBlueTulipHead(ctx, p, scale) {
+            ctx.save();
+            ctx.scale(scale, scale);
+
+            // Cánh giữa phía sau
+            ctx.beginPath();
+            ctx.moveTo(0, 6);
+            ctx.bezierCurveTo(-14, -4, -14, -26, 0, -34);
+            ctx.bezierCurveTo(14, -26, 14, -4, 0, 6);
+            const midGrad = ctx.createLinearGradient(0, 6, 0, -34);
+            midGrad.addColorStop(0, p.base);
+            midGrad.addColorStop(0.55, p.center);
+            midGrad.addColorStop(1, p.tip);
+            ctx.fillStyle = midGrad;
+            ctx.fill();
+
+            // Cánh trái ôm cong mềm mại
+            ctx.beginPath();
+            ctx.moveTo(0, 8);
+            ctx.bezierCurveTo(-20, 4, -22, -18, -11, -29);
+            ctx.bezierCurveTo(-3, -22, 0, -8, 0, 8);
+            const leftGrad = ctx.createLinearGradient(-16, 6, -6, -28);
+            leftGrad.addColorStop(0, p.base);
+            leftGrad.addColorStop(0.5, p.left);
+            leftGrad.addColorStop(1, p.tip);
+            ctx.fillStyle = leftGrad;
+            ctx.fill();
+
+            // Cánh phải ôm cong mềm mại
+            ctx.beginPath();
+            ctx.moveTo(0, 8);
+            ctx.bezierCurveTo(20, 4, 22, -18, 11, -29);
+            ctx.bezierCurveTo(3, -22, 0, -8, 0, 8);
+            const rightGrad = ctx.createLinearGradient(16, 6, 6, -28);
+            rightGrad.addColorStop(0, p.base);
+            rightGrad.addColorStop(0.5, p.right);
+            rightGrad.addColorStop(1, p.center);
+            ctx.fillStyle = rightGrad;
+            ctx.fill();
+
+            // Ánh sáng bóng nhẹ trên cánh tulip
+            ctx.beginPath();
+            ctx.moveTo(-6, -2);
+            ctx.quadraticCurveTo(-11, -12, -7, -21);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.55)';
+            ctx.lineWidth = 1.6;
+            ctx.lineCap = 'round';
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Vẽ một bông Hoa Hồng nhiều lớp cánh mềm mại
+        function drawRoseHead(ctx, p, scale) {
+            ctx.save();
+            ctx.scale(scale, scale);
+
+            // Đài hoa xanh nhỏ dưới bông hồng
+            ctx.fillStyle = '#4d9b72';
+            ctx.beginPath();
+            ctx.moveTo(-10, 4);
+            ctx.quadraticCurveTo(0, 12, 10, 4);
+            ctx.quadraticCurveTo(0, 6, -10, 4);
+            ctx.fill();
+
+            // Lớp cánh ngoài cùng (5 cánh mềm)
+            for (let i = 0; i < 5; i++) {
+                const ang = (i / 5) * Math.PI * 2 - Math.PI / 2;
+                ctx.save();
+                ctx.rotate(ang);
+                ctx.beginPath();
+                ctx.ellipse(0, -10, 11, 8.5, 0, 0, Math.PI * 2);
+                ctx.fillStyle = p.outer;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Lớp cánh giữa (4 cánh đan xen)
+            for (let i = 0; i < 4; i++) {
+                const ang = (i / 4) * Math.PI * 2 + 0.4;
+                ctx.save();
+                ctx.rotate(ang);
+                ctx.beginPath();
+                ctx.ellipse(0, -6.5, 8.8, 7, 0, 0, Math.PI * 2);
+                ctx.fillStyle = p.mid;
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // Lớp cánh trong
+            ctx.beginPath();
+            ctx.arc(0, -2, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = p.inner;
+            ctx.fill();
+
+            // Nhụy xoắn trung tâm
+            ctx.beginPath();
+            ctx.arc(0, -2, 4.8, 0, Math.PI * 2);
+            ctx.fillStyle = p.core;
+            ctx.fill();
+
+            // Đường viền sáng xoắn nhẹ tạo độ khối cho cánh hồng
+            ctx.strokeStyle = p.highlight;
+            ctx.lineWidth = 1.3;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.arc(0, -2, 5.5, 0.3, Math.PI * 1.15);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(0, -2, 9.2, Math.PI * 1.2, Math.PI * 1.9);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Vẽ từng bông hoa cùng thân & lá đung đưa theo gió
+        function drawFlower(f, time) {
+            const breeze = Math.sin(time * f.swaySpeed + f.swayPhase) * f.swayAmp
+                         + Math.cos(time * 0.0005 + f.x * 0.008) * 5
+                         + windPointerOffset * (0.4 + f.layer * 0.35);
+
+            const tipX = f.x + breeze + f.lean * f.stemHeight * 0.35;
+            const tipY = f.baseY - f.stemHeight;
+            const ctrlX = f.x + breeze * 0.42;
+            const ctrlY = f.baseY - f.stemHeight * 0.52;
+
+            gCtx.save();
+            gCtx.globalAlpha = f.alpha;
+
+            // Vẽ thân cây uốn cong mềm mại
+            gCtx.beginPath();
+            gCtx.moveTo(f.x, f.baseY);
+            gCtx.quadraticCurveTo(ctrlX, ctrlY, tipX, tipY);
+            gCtx.strokeStyle = f.stemColor;
+            gCtx.lineWidth = 2.6 * f.scale;
+            gCtx.lineCap = 'round';
+            gCtx.stroke();
+
+            // Vẽ lá tulip thon dài hoặc lá hoa hồng
+            const leafBaseX = (f.x + ctrlX) * 0.5;
+            const leafBaseY = f.baseY - f.stemHeight * 0.38;
+
+            if (f.type === 'tulip') {
+                // Lá tulip cong vươn lên đặc trưng
+                gCtx.beginPath();
+                gCtx.moveTo(f.x, f.baseY - 12);
+                gCtx.quadraticCurveTo(
+                    f.x + f.leafSide * 26 * f.scale + breeze * 0.25,
+                    f.baseY - f.stemHeight * 0.42,
+                    f.x + f.leafSide * 18 * f.scale + breeze * 0.45,
+                    f.baseY - f.stemHeight * 0.68
+                );
+                gCtx.quadraticCurveTo(
+                    f.x + f.leafSide * 6 * f.scale + breeze * 0.2,
+                    f.baseY - f.stemHeight * 0.35,
+                    f.x,
+                    f.baseY - 8
+                );
+                gCtx.fillStyle = f.layer === 0 ? '#74b896' : '#53a57c';
+                gCtx.fill();
+            } else {
+                // Cặp lá nhỏ cho thân hoa hồng
+                gCtx.save();
+                gCtx.translate(leafBaseX, leafBaseY);
+                gCtx.rotate(f.leafSide * 0.65);
+                gCtx.beginPath();
+                gCtx.ellipse(f.leafSide * 9 * f.scale, 0, 10 * f.scale, 4.5 * f.scale, 0, 0, Math.PI * 2);
+                gCtx.fillStyle = f.layer === 0 ? '#6fb390' : '#4a986e';
+                gCtx.fill();
+                gCtx.restore();
+            }
+
+            // Góc nghiêng của bông hoa theo độ cong của thân
+            const angle = Math.atan2(tipX - ctrlX, ctrlY - tipY) * 0.72;
+            gCtx.translate(tipX, tipY);
+            gCtx.rotate(angle);
+
+            if (f.type === 'tulip') {
+                drawBlueTulipHead(gCtx, f.palette, f.scale);
+            } else {
+                drawRoseHead(gCtx, f.palette, f.scale);
+            }
+
+            gCtx.restore();
+        }
+
+        // Vẽ cánh hoa rơi nhẹ
+        function updateAndDrawPetals(time) {
+            fallingPetals.forEach(p => {
+                p.y += p.speedY;
+                p.x += p.speedX + Math.sin(time * 0.0016 + p.flutterPhase) * 0.65 + windPointerOffset * 0.015;
+                p.angle += p.spin;
+
+                if (p.y > height + 20 || p.x > width + 40 || p.x < -40) {
+                    Object.assign(p, createFallingPetal(false));
+                }
+
+                gCtx.save();
+                gCtx.translate(p.x, p.y);
+                gCtx.rotate(p.angle);
+                const flutterScale = 0.55 + Math.abs(Math.sin(time * 0.003 + p.flutterPhase)) * 0.45;
+                gCtx.scale(1, flutterScale);
+                gCtx.globalAlpha = p.alpha;
+                gCtx.fillStyle = p.color;
+                gCtx.beginPath();
+                gCtx.ellipse(0, 0, p.size, p.size * 0.58, 0, 0, Math.PI * 2);
+                gCtx.fill();
+                gCtx.restore();
+            });
+        }
+
+        // Vẽ đom đóm / hạt sáng lung linh
+        function updateAndDrawFireflies(time) {
+            fireflies.forEach(f => {
+                f.x += f.vx + Math.sin(time * 0.001 + f.phase) * 0.22;
+                f.y += f.vy;
+
+                if (f.y < -15) {
+                    f.y = height * 0.95;
+                    f.x = Math.random() * width;
+                }
+                if (f.x < -15) f.x = width + 15;
+                if (f.x > width + 15) f.x = -15;
+
+                const glow = 0.25 + (Math.sin(time * f.glowSpeed + f.phase) + 1) * 0.37;
+                const rad = gCtx.createRadialGradient(f.x, f.y, 0.2, f.x, f.y, f.r * 4.5);
+                rad.addColorStop(0, `rgba(255, 255, 255, ${glow})`);
+                rad.addColorStop(0.4, `rgba(${f.color}, ${glow * 0.7})`);
+                rad.addColorStop(1, `rgba(${f.color}, 0)`);
+
+                gCtx.fillStyle = rad;
+                gCtx.beginPath();
+                gCtx.arc(f.x, f.y, f.r * 4.5, 0, Math.PI * 2);
+                gCtx.fill();
+            });
+        }
+
+        // Vòng lặp vẽ chính của rừng hoa
+        function animateGarden(time) {
+            // Nội suy hướng gió theo chuyển động chuột/chạm
+            windPointerOffset += (targetWindOffset - windPointerOffset) * 0.04;
+
+            drawSkyAndAtmosphere(time);
+
+            // Vẽ lần lượt các lớp hoa từ xa đến gần + đom đóm xen giữa
+            for (let layer = 0; layer <= 2; layer++) {
+                for (let i = 0; i < flowers.length; i++) {
+                    if (flowers[i].layer === layer) {
+                        drawFlower(flowers[i], time);
+                    }
+                }
+                // Tạo lớp sương nắng mờ ảo giữa tầng hoa xa và gần
+                if (layer === 0) {
+                    const mist = gCtx.createLinearGradient(0, height * 0.55, 0, height);
+                    mist.addColorStop(0, 'rgba(255, 255, 255, 0)');
+                    mist.addColorStop(1, 'rgba(224, 242, 254, 0.22)');
+                    gCtx.fillStyle = mist;
+                    gCtx.fillRect(0, height * 0.55, width, height * 0.45);
+                }
+            }
+
+            updateAndDrawFireflies(time);
+            updateAndDrawPetals(time);
+
+            requestAnimationFrame(animateGarden);
+        }
+
+        /* =========================================================================
+           4. PHÁO HOA CÁNH HOA XANH TRỜI & TRÁI TIM KHI BẤM "THA LỖI CHO ĐẤY 💙"
+        ========================================================================= */
+        const celebCanvas = document.getElementById('celebrationCanvas');
+        const cCtx = celebCanvas.getContext('2d');
+        let celebParticles = [];
+        let celebRunning = false;
+
+        function resizeCelebCanvas() {
+            celebCanvas.width = Math.floor(window.innerWidth * dpr);
+            celebCanvas.height = Math.floor(window.innerHeight * dpr);
+            cCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        function spawnCelebrationBurst() {
+            const colors = ['#38bdf8', '#7dd3fc', '#bae6fd', '#60a5fa', '#f9a8d4', '#fbcfe8', '#fde047'];
+            const originX = window.innerWidth * 0.5;
+            const originY = window.innerHeight * 0.62;
+
+            for (let i = 0; i < 95; i++) {
+                const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI * 1.45;
+                const speed = 4 + Math.random() * 10;
+                const kind = Math.random() < 0.38 ? 'heart' : (Math.random() < 0.85 ? 'petal' : 'sparkle');
+                celebParticles.push({
+                    x: originX + (Math.random() - 0.5) * 90,
+                    y: originY + (Math.random() - 0.5) * 30,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 2.5,
+                    gravity: 0.14 + Math.random() * 0.06,
+                    drag: 0.985,
+                    size: kind === 'heart' ? (8 + Math.random() * 7) : (6 + Math.random() * 6),
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.12,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    kind: kind,
+                    life: 1.0,
+                    decay: 0.0055 + Math.random() * 0.0045
+                });
+            }
+
+            if (!celebRunning) {
+                celebRunning = true;
+                requestAnimationFrame(animateCelebration);
+            }
+        }
+
+        function drawMiniHeart(ctx, size, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            const s = size * 0.5;
+            ctx.moveTo(0, s * 0.6);
+            ctx.bezierCurveTo(-s * 1.2, -s * 0.4, -s * 0.6, -s * 1.4, 0, -s * 0.5);
+            ctx.bezierCurveTo(s * 0.6, -s * 1.4, s * 1.2, -s * 0.4, 0, s * 0.6);
+            ctx.fill();
+        }
+
+        function animateCelebration() {
+            cCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+            for (let i = celebParticles.length - 1; i >= 0; i--) {
+                const p = celebParticles[i];
+                p.vx *= p.drag;
+                p.vy = p.vy * p.drag + p.gravity;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rotation += p.rotSpeed;
+                p.life -= p.decay;
+
+                if (p.life <= 0) {
+                    celebParticles.splice(i, 1);
+                    continue;
+                }
+
+                cCtx.save();
+                cCtx.globalAlpha = Math.max(0, p.life);
+                cCtx.translate(p.x, p.y);
+                cCtx.rotate(p.rotation);
+
+                if (p.kind === 'heart') {
+                    drawMiniHeart(cCtx, p.size, p.color);
+                } else if (p.kind === 'petal') {
+                    cCtx.fillStyle = p.color;
+                    cCtx.beginPath();
+                    cCtx.ellipse(0, 0, p.size, p.size * 0.52, 0, 0, Math.PI * 2);
+                    cCtx.fill();
+                } else {
+                    cCtx.fillStyle = p.color;
+                    cCtx.beginPath();
+                    cCtx.arc(0, 0, p.size * 0.35, 0, Math.PI * 2);
+                    cCtx.fill();
+                }
+                cCtx.restore();
+            }
+
+            if (celebParticles.length > 0) {
+                requestAnimationFrame(animateCelebration);
+            } else {
+                celebRunning = false;
+            }
+        }
+
+        /* =========================================================================
+           5. XỬ LÝ TƯƠNG TÁC GIAO DIỆN & CHUYỂN CẢNH
+        ========================================================================= */
+        const introScreen = document.getElementById('introScreen');
+        const letterScreen = document.getElementById('letterScreen');
+        const letterCard = document.getElementById('letterCard');
+        const envelopeBox = document.getElementById('envelopeBox');
+        const openLetterBtn = document.getElementById('openLetterBtn');
+        const backToGardenBtn = document.getElementById('backToGardenBtn');
+
+        let isTransitioning = false;
+
+        // Mở phong bì và chuyển sang màn hình lá thư
+        function openEnvelopeAndShowLetter() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            // Tự động bật nhạc êm dịu nếu chưa bật
+            if (!musicBox.isPlaying) {
+                musicBox.start();
+            } else {
+                musicBox.playChime();
+            }
+
+            // Kích hoạt hiệu ứng mở nắp phong bì 3D
+            envelopeBox.classList.add('opening');
+
+            // Sau khi nắp mở và tờ thư nhô lên, chuyển cảnh sang lá thư
+            setTimeout(() => {
+                introScreen.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                gardenCanvas.classList.add('blurred');
+
+                setTimeout(() => {
+                    introScreen.classList.add('hidden');
+                    letterScreen.classList.remove('hidden');
+                    letterScreen.classList.add('flex');
+                    letterCard.classList.remove('animate-paper-reveal');
+                    void letterCard.offsetWidth; // trigger reflow
+                    letterCard.classList.add('animate-paper-reveal');
+
+                    backToGardenBtn.classList.remove('hidden');
+                    backToGardenBtn.classList.add('flex');
+                    isTransitioning = false;
+                }, 480);
+            }, 720);
+        }
+
+        // Quay lại ngắm rừng hoa
+        function backToGarden() {
+            letterScreen.classList.add('hidden');
+            letterScreen.classList.remove('flex');
+            backToGardenBtn.classList.add('hidden');
+            backToGardenBtn.classList.remove('flex');
+
+            gardenCanvas.classList.remove('blurred');
+            envelopeBox.classList.remove('opening');
+
+            introScreen.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                introScreen.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+            });
+        }
+
+        envelopeBox.addEventListener('click', openEnvelopeAndShowLetter);
+        envelopeBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') openEnvelopeAndShowLetter();
+        });
+        openLetterBtn.addEventListener('click', openEnvelopeAndShowLetter);
+        backToGardenBtn.addEventListener('click', backToGarden);
+
+        // Nút bật/tắt nhạc
+        document.getElementById('musicToggleBtn').addEventListener('click', () => {
+            musicBox.toggle();
+        });
+
+        // Tương tác cuối thư: Nút "Tha lỗi cho đấy 💙"
+        document.getElementById('forgiveBtn').addEventListener('click', () => {
+            musicBox.playChime();
+            spawnCelebrationBurst();
+            setTimeout(spawnCelebrationBurst, 420);
+
+            document.getElementById('interactionArea').classList.add('hidden');
+            const forgivenBox = document.getElementById('forgivenMessage');
+            forgivenBox.classList.remove('hidden');
+            forgivenBox.classList.add('animate-paper-reveal');
+        });
+
+        document.getElementById('replayCelebrationBtn').addEventListener('click', () => {
+            musicBox.playChime();
+            spawnCelebrationBurst();
+        });
+
+        // Tương tác cuối thư: Nút "Vẫn còn giận một xíu..."
+        document.getElementById('stillMadBtn').addEventListener('click', () => {
+            const coaxBox = document.getElementById('coaxBox');
+            coaxBox.textContent = COAX_MESSAGES[coaxIndex % COAX_MESSAGES.length];
+            coaxBox.classList.remove('hidden');
+            coaxIndex++;
+
+            // Làm nút "Tha lỗi" nổi bật hơn một chút một cách dễ thương
+            const forgiveBtn = document.getElementById('forgiveBtn');
+            forgiveBtn.classList.add('ring-4', 'ring-sky-200');
+            setTimeout(() => forgiveBtn.classList.remove('ring-4', 'ring-sky-200'), 700);
+        });
+
+        /* =========================================================================
+           6. MODAL CHỈNH SỬA LÁ THƯ & CHẾ ĐỘ GỬI ĐI
+        ========================================================================= */
+        const editModal = document.getElementById('editModal');
+        const editLetterBtn = document.getElementById('editLetterBtn');
+
+        function openEditModal() {
+            document.getElementById('inputIntroTitle').value = currentLetter.introTitle;
+            document.getElementById('inputGreeting').value = currentLetter.greeting;
+            document.getElementById('inputBody').value = currentLetter.body;
+            document.getElementById('inputSignature').value = currentLetter.signature;
+            document.getElementById('inputQuestion').value = currentLetter.question;
+
+            editModal.classList.remove('hidden');
+            editModal.classList.add('flex');
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+            editModal.classList.remove('flex');
+        }
+
+        function collectFormValues() {
+            return {
+                introTitle: document.getElementById('inputIntroTitle').value.trim() || DEFAULT_LETTER.introTitle,
+                greeting: document.getElementById('inputGreeting').value.trim() || DEFAULT_LETTER.greeting,
+                body: document.getElementById('inputBody').value.trim() || DEFAULT_LETTER.body,
+                signature: document.getElementById('inputSignature').value.trim() || DEFAULT_LETTER.signature,
+                question: document.getElementById('inputQuestion').value.trim() || DEFAULT_LETTER.question
+            };
+        }
+
+        editLetterBtn.addEventListener('click', openEditModal);
+        document.getElementById('closeEditModalBtn').addEventListener('click', closeEditModal);
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) closeEditModal();
+        });
+
+        // Lưu vào localStorage
+        document.getElementById('saveLetterBtn').addEventListener('click', () => {
+            currentLetter = collectFormValues();
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(currentLetter));
+            } catch (e) {
+                console.warn('Không thể lưu vào localStorage:', e);
+            }
+            renderLetter();
+            closeEditModal();
+            showToast('💙 Đã lưu nội dung lá thư của bạn!');
+        });
+
+        // Chế độ gửi đi (Ẩn nút sửa để trình chiếu / đưa điện thoại cho người thương)
+        document.getElementById('previewSendModeBtn').addEventListener('click', () => {
+            currentLetter = collectFormValues();
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(currentLetter));
+            } catch (e) {}
+            renderLetter();
+            closeEditModal();
+            editLetterBtn.classList.add('hidden');
+            showToast('✨ Đã bật chế độ gửi đi (tải lại trang để sửa lại)');
+        });
+
+        // Sao chép đường dẫn chứa sẵn nội dung lá thư (dùng document.execCommand('copy') an toàn trong iframe)
+        document.getElementById('copyShareLinkBtn').addEventListener('click', () => {
+            currentLetter = collectFormValues();
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(currentLetter));
+                renderLetter();
+
+                const jsonStr = JSON.stringify(currentLetter);
+                const encoded = btoa(unescape(encodeURIComponent(jsonStr)));
+                const shareUrl = `${window.location.origin}${window.location.pathname}#letter=${encoded}`;
+
+                const tempInput = document.createElement('textarea');
+                tempInput.value = shareUrl;
+                tempInput.style.position = 'fixed';
+                tempInput.style.opacity = '0';
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                showToast('🔗 Đã sao chép đường dẫn lá thư!');
+            } catch (e) {
+                showToast('Không thể sao chép đường dẫn lúc này.');
+            }
+        });
+
+        // Khôi phục mặc định
+        document.getElementById('resetDefaultBtn').addEventListener('click', () => {
+            currentLetter = { ...DEFAULT_LETTER };
+            try {
+                localStorage.removeItem(STORAGE_KEY);
+            } catch (e) {}
+            renderLetter();
+            openEditModal();
+            showToast('🌷 Đã khôi phục lá thư mặc định');
+        });
+
+        /* =========================================================================
+           5. CƠ CHẾ CHỐNG BẤM TUYỆT ĐỐI CHO NÚT "CÒN" (CHẠY KHẮP MÀN HÌNH)
+        ========================================================================= */
+        const introScreen = document.getElementById('introScreen');
+        const letterScreen = document.getElementById('letterScreen');
+        const letterCard = document.getElementById('letterCard');
+        const envelopeBox = document.getElementById('envelopeBox');
+        const openLetterBtn = document.getElementById('openLetterBtn');
+        const backToGardenBtn = document.getElementById('backToGardenBtn');
+        const confirmBtnContainer = document.getElementById('confirmBtnContainer');
+        const runawayBtn = document.getElementById('runawayBtn');
+
+        let isTransitioning = false;
+        let isRunawayFloating = false;
+        let lastFleeTime = 0;
+
+        // Di chuyển nút "Còn" tới vị trí ngẫu nhiên an toàn trong toàn màn hình, tránh xa con trỏ
+        function fleeRunawayButton(pointerX = null, pointerY = null) {
+            if (isForgivenState || letterScreen.classList.contains('hidden')) return;
+
+            const now = Date.now();
+            if (now - lastFleeTime < 90) return;
+            lastFleeTime = now;
+
+            // Đưa nút ra trực tiếp document.body để position: fixed luôn tính theo toàn viewport
+            if (!isRunawayFloating) {
+                const rect = runawayBtn.getBoundingClientRect();
+                document.body.appendChild(runawayBtn);
+                runawayBtn.style.position = 'fixed';
+                runawayBtn.style.left = `${rect.left}px`;
+                runawayBtn.style.top = `${rect.top}px`;
+                runawayBtn.style.zIndex = '65';
+                runawayBtn.style.margin = '0';
+                runawayBtn.style.transition = 'left 0.16s cubic-bezier(0.22, 1, 0.36, 1), top 0.16s cubic-bezier(0.22, 1, 0.36, 1), transform 0.16s ease';
+                isRunawayFloating = true;
+            }
+
+            const btnW = runawayBtn.offsetWidth || 96;
+            const btnH = runawayBtn.offsetHeight || 48;
+            const pad = 20;
+            const maxX = Math.max(pad, window.innerWidth - btnW - pad);
+            const maxY = Math.max(pad, window.innerHeight - btnH - pad);
+
+            let bestX = pad + Math.random() * (maxX - pad);
+            let bestY = pad + Math.random() * (maxY - pad);
+
+            // Chọn vị trí cách xa con trỏ chuột/ngón tay ít nhất 140px (nếu có tọa độ)
+            if (pointerX !== null && pointerY !== null) {
+                let bestDist = -1;
+                for (let attempt = 0; attempt < 18; attempt++) {
+                    const candX = pad + Math.random() * (maxX - pad);
+                    const candY = pad + Math.random() * (maxY - pad);
+                    const cx = candX + btnW / 2;
+                    const cy = candY + btnH / 2;
+                    const dist = Math.hypot(cx - pointerX, cy - pointerY);
+                    if (dist > bestDist) {
+                        bestDist = dist;
+                        bestX = candX;
+                        bestY = candY;
+                    }
+                    if (dist > 180) break;
+                }
+            }
+
+            // Đảm bảo nằm gọn trong biên an toàn của viewport
+            bestX = Math.min(Math.max(pad, bestX), maxX);
+            bestY = Math.min(Math.max(pad, bestY), maxY);
+
+            runawayBtn.style.left = `${Math.round(bestX)}px`;
+            runawayBtn.style.top = `${Math.round(bestY)}px`;
+            runawayBtn.style.transform = `rotate(${(Math.random() - 0.5) * 14}deg)`;
+        }
+
+        // Đặt lại nút "Còn" về vị trí ban đầu hoặc ẩn khi rời màn hình thư
+        function resetRunawayButton(hideCompletely = false) {
+            if (isRunawayFloating) {
+                runawayBtn.style.position = '';
+                runawayBtn.style.left = '';
+                runawayBtn.style.top = '';
+                runawayBtn.style.zIndex = '';
+                runawayBtn.style.margin = '';
+                runawayBtn.style.transition = '';
+                runawayBtn.style.transform = '';
+                confirmBtnContainer.appendChild(runawayBtn);
+                isRunawayFloating = false;
+            }
+            if (hideCompletely) {
+                runawayBtn.classList.add('hidden');
+            } else if (!isForgivenState) {
+                runawayBtn.classList.remove('hidden');
+            }
+        }
+
+        // Bắt mọi sự kiện tương tác có thể xảy ra trên nút "Còn" để không bao giờ bấm trúng
+        ['mouseenter', 'pointerdown', 'touchstart', 'click', 'focus'].forEach((evtName) => {
+            runawayBtn.addEventListener(evtName, (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (evtName === 'focus') runawayBtn.blur();
+                const pt = (e.touches && e.touches[0]) ? e.touches[0] : e;
+                fleeRunawayButton(pt.clientX ?? null, pt.clientY ?? null);
+            }, { passive: false });
+        });
+
+        // Kiểm tra khoảng cách khi lia chuột lại gần nút "Còn" (vùng né 75px)
+        document.addEventListener('mousemove', (e) => {
+            if (isForgivenState || letterScreen.classList.contains('hidden')) return;
+            if (!editModal.classList.contains('hidden')) return;
+
+            const rect = runawayBtn.getBoundingClientRect();
+            const closestX = Math.max(rect.left, Math.min(e.clientX, rect.right));
+            const closestY = Math.max(rect.top, Math.min(e.clientY, rect.bottom));
+            const dist = Math.hypot(e.clientX - closestX, e.clientY - closestY);
+
+            if (dist < 72) {
+                fleeRunawayButton(e.clientX, e.clientY);
+            }
+        });
+
+        // Mở phong bì và chuyển sang màn hình lá thư
+        function openEnvelopeAndShowLetter() {
+            if (isTransitioning) return;
+            isTransitioning = true;
+
+            if (!musicBox.isPlaying) {
+                musicBox.start();
+            } else {
+                musicBox.playChime();
+            }
+
+            envelopeBox.classList.add('opening');
+
+            setTimeout(() => {
+                introScreen.classList.add('opacity-0', 'scale-95', 'pointer-events-none');
+                gardenCanvas.classList.add('blurred');
+
+                setTimeout(() => {
+                    introScreen.classList.add('hidden');
+                    letterScreen.classList.remove('hidden');
+                    letterScreen.classList.add('flex');
+                    letterCard.classList.remove('animate-paper-reveal');
+                    void letterCard.offsetWidth;
+                    letterCard.classList.add('animate-paper-reveal');
+
+                    backToGardenBtn.classList.remove('hidden');
+                    backToGardenBtn.classList.add('flex');
+                    isTransitioning = false;
+                }, 480);
+            }, 720);
+        }
+
+        // Quay lại ngắm rừng hoa
+        function backToGarden() {
+            resetRunawayButton(false);
+            letterScreen.classList.add('hidden');
+            letterScreen.classList.remove('flex');
+            backToGardenBtn.classList.add('hidden');
+            backToGardenBtn.classList.remove('flex');
+
+            gardenCanvas.classList.remove('blurred');
+            envelopeBox.classList.remove('opening');
+
+            introScreen.classList.remove('hidden');
+            requestAnimationFrame(() => {
+                introScreen.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+            });
+        }
+
+        envelopeBox.addEventListener('click', openEnvelopeAndShowLetter);
+        envelopeBox.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') openEnvelopeAndShowLetter();
+        });
+        openLetterBtn.addEventListener('click', openEnvelopeAndShowLetter);
+        backToGardenBtn.addEventListener('click', backToGarden);
+
+        // Nút bật/tắt nhạc
+        document.getElementById('musicToggleBtn').addEventListener('click', () => {
+            musicBox.toggle();
+        });
+
+        // Tương tác cuối thư: Nút "Hết oiii 💙"
+        document.getElementById('forgiveBtn').addEventListener('click', () => {
+            if (isForgivenState) return;
+            isForgivenState = true;
+
+            // Ẩn ngay nút "Còn" nếu đang bay trên màn hình
+            resetRunawayButton(true);
+
+            // Pháo hoa trái tim, cánh hoa hồng & hoa tulip xanh bùng nổ
+            musicBox.playChime();
+            spawnCelebrationBurst();
+            setTimeout(spawnCelebrationBurst, 400);
+            setTimeout(spawnCelebrationBurst, 850);
+
+            document.getElementById('interactionArea').classList.add('hidden');
+            const forgivenBox = document.getElementById('forgivenMessage');
+            forgivenBox.classList.remove('hidden');
+            forgivenBox.classList.add('animate-paper-reveal');
+
+            // Ghi nhận lên đám mây & gửi thông báo Webhook cho người gửi (chạy ngầm)
+            notifySenderOnForgive(false);
+        });
+
+        document.getElementById('replayCelebrationBtn').addEventListener('click', () => {
+            musicBox.playChime();
+            spawnCelebrationBurst();
+        });
+
+        /* =========================================================================
+           6. MODAL CHỈNH SỬA LÁ THƯ, CÀI ĐẶT WEBHOOK & XEM LỊCH SỬ
+        ========================================================================= */
+        const editModal = document.getElementById('editModal');
+        const editLetterBtn = document.getElementById('editLetterBtn');
+
+        // Chuyển đổi các tab trong Modal
+        const tabConfigs = [
+            { btn: document.getElementById('tabBtnLetter'), panel: document.getElementById('tabPanelLetter') },
+            { btn: document.getElementById('tabBtnNotify'), panel: document.getElementById('tabPanelNotify') },
+            { btn: document.getElementById('tabBtnHistory'), panel: document.getElementById('tabPanelHistory') }
+        ];
+
+        function switchModalTab(activeIdx) {
+            tabConfigs.forEach((t, idx) => {
+                if (idx === activeIdx) {
+                    t.btn.classList.add('bg-sky-500', 'text-white', 'shadow-sm');
+                    t.btn.classList.remove('text-slate-600', 'hover:bg-white');
+                    t.panel.classList.remove('hidden');
+                } else {
+                    t.btn.classList.remove('bg-sky-500', 'text-white', 'shadow-sm');
+                    t.btn.classList.add('text-slate-600', 'hover:bg-white');
+                    t.panel.classList.add('hidden');
+                }
+            });
+        }
+
+        tabConfigs.forEach((t, idx) => {
+            t.btn.addEventListener('click', () => switchModalTab(idx));
+        });
+
+        function openEditModal() {
+            document.getElementById('inputIntroTitle').value = currentLetter.introTitle;
+            document.getElementById('inputGreeting').value = currentLetter.greeting;
+            document.getElementById('inputBody').value = currentLetter.body;
+            document.getElementById('inputSignature').value = currentLetter.signature;
+            document.getElementById('inputQuestion').value = currentLetter.question || 'Còn dận anhh hong...?';
+            document.getElementById('inputWebhookUrl').value = currentLetter.webhookUrl || '';
+            document.getElementById('inputTelegramToken').value = currentLetter.telegramToken || '';
+            document.getElementById('inputTelegramChatId').value = currentLetter.telegramChatId || '';
+
+            renderConfirmationHistory();
+            editModal.classList.remove('hidden');
+            editModal.classList.add('flex');
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('hidden');
+            editModal.classList.remove('flex');
+        }
+
+        function collectFormValues() {
+            return {
+                introTitle: document.getElementById('inputIntroTitle').value.trim() || DEFAULT_LETTER.introTitle,
+                greeting: document.getElementById('inputGreeting').value.trim() || DEFAULT_LETTER.greeting,
+                body: document.getElementById('inputBody').value.trim() || DEFAULT_LETTER.body,
+                signature: document.getElementById('inputSignature').value.trim() || DEFAULT_LETTER.signature,
+                question: document.getElementById('inputQuestion').value.trim() || DEFAULT_LETTER.question,
+                webhookUrl: document.getElementById('inputWebhookUrl').value.trim(),
+                telegramToken: document.getElementById('inputTelegramToken').value.trim(),
+                telegramChatId: document.getElementById('inputTelegramChatId').value.trim()
+            };
+        }
+
+        editLetterBtn.addEventListener('click', openEditModal);
+        document.getElementById('closeEditModalBtn').addEventListener('click', closeEditModal);
+        editModal.addEventListener('click', (e) => {
+            if (e.target === editModal) closeEditModal();
+        });
+
+        // Lưu thư & cài đặt thông báo
+        document.getElementById('saveLetterBtn').addEventListener('click', async () => {
+            currentLetter = collectFormValues();
+            renderLetter();
+            await saveLetterToCloud(currentLetter);
+            closeEditModal();
+            showToast('💙 Đã lưu lá thư và cài đặt thông báo!');
+        });
+
+        // Gửi thử Webhook
+        document.getElementById('testWebhookBtn').addEventListener('click', async () => {
+            currentLetter = collectFormValues();
+            if (!currentLetter.webhookUrl && !(currentLetter.telegramToken && currentLetter.telegramChatId)) {
+                showToast('⚠️ Hãy nhập Discord/Webhook URL hoặc Telegram trước nhé!');
+                return;
+            }
+            showToast('⏳ Đang gửi thử thông báo...');
+            const ok = await notifySenderOnForgive(true);
+            if (ok) {
+                showToast('✅ Đã gửi thử thông báo! Hãy kiểm tra máy của bạn.');
+            } else {
+                showToast('⚠️ Không thể gửi thử, vui lòng kiểm tra lại URL/Token.');
+            }
+        });
+
+        // Chế độ gửi đi (Ẩn nút sửa)
+        document.getElementById('previewSendModeBtn').addEventListener('click', async () => {
+            currentLetter = collectFormValues();
+            renderLetter();
+            await saveLetterToCloud(currentLetter);
+            closeEditModal();
+            editLetterBtn.classList.add('hidden');
+            showToast('✨ Đã bật chế độ gửi đi (tải lại trang để sửa lại)');
+        });
+
+        // Sao chép đường dẫn gửi đi (?view=letter + dữ liệu dự phòng trong hash)
+        document.getElementById('copyShareLinkBtn').addEventListener('click', async () => {
+            currentLetter = collectFormValues();
+            renderLetter();
+            await saveLetterToCloud(currentLetter);
+            try {
+                // Chỉ mã hóa nội dung thư vào hash dự phòng (không đưa token bí mật lên URL)
+                const safePublicLetter = {
+                    introTitle: currentLetter.introTitle,
+                    greeting: currentLetter.greeting,
+                    body: currentLetter.body,
+                    signature: currentLetter.signature,
+                    question: currentLetter.question
+                };
+                const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(safePublicLetter))));
+                const shareUrl = `${window.location.origin}${window.location.pathname}?view=letter#letter=${encoded}`;
+
+                const tempInput = document.createElement('textarea');
+                tempInput.value = shareUrl;
+                tempInput.style.position = 'fixed';
+                tempInput.style.opacity = '0';
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+
+                showToast('🔗 Đã sao chép đường dẫn gửi cho người thương!');
+            } catch (e) {
+                showToast('Không thể sao chép đường dẫn lúc này.');
+            }
+        });
+
+        // Khôi phục mặc định
+        document.getElementById('resetDefaultBtn').addEventListener('click', async () => {
+            currentLetter = { ...DEFAULT_LETTER };
+            renderLetter();
+            await saveLetterToCloud(currentLetter);
+            openEditModal();
+            showToast('🌷 Đã khôi phục nội dung mặc định');
+        });
+
+        /* =========================================================================
+           7. CẢM ỨNG GIÓ NHẸ KHI DI CHUỘT HOẶC VUỐT MÀN HÌNH & KHỞI CHẠY
+        ========================================================================= */
+        window.addEventListener('mousemove', (e) => {
+            const normX = (e.clientX / window.innerWidth) - 0.5;
+            targetWindOffset = normX * 22;
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches[0]) {
+                const normX = (e.touches[0].clientX / window.innerWidth) - 0.5;
+                targetWindOffset = normX * 26;
+            }
+        }, { passive: true });
+
+        window.addEventListener('resize', () => {
+            resizeGarden();
+            resizeCelebCanvas();
+            // Giữ nút "Còn" luôn nằm trong khung hình nếu đang trôi nổi
+            if (isRunawayFloating && !isForgivenState) {
+                fleeRunawayButton();
+            }
+        });
+
+        function startApp() {
+            checkViewOnlyMode();
+            renderLetter();
+            resizeGarden();
+            resizeCelebCanvas();
+            requestAnimationFrame(animateGarden);
+            initCloudSync();
+        }
+
+        if (document.readyState === 'complete') {
+            startApp();
+        } else {
+            window.addEventListener('load', startApp);
+        }
+    </script>
+</body>
+</html>
